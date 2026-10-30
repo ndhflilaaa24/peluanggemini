@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemini Lead Radar — Pemantau Peluang X</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    :root {
+      --bg-lavender: #e8def8;
+      --bg-card: #fff9fc;
+      --border-soft: #f0d8e8;
+      --text-plum: #592542;
+      --text-muted: #8a6479;
+      --accent-pink: #d4387d;
+      --highlight-pink: #ffcce0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(160deg, #e2d4f0 0%, #f5dce8 50%, #e9dcf5 100%);
+      color: var(--text-plum);
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #debdd1;
+      border-radius: 9999px;
+    }
+
+    /* Highlighted Keyword Pill inside Tweet */
+    .kw-highlight {
+      background-color: #ffd1e3;
+      color: #6b1d45;
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-weight: 600;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+
+    .product-card-gradient {
+      background: linear-gradient(135deg, #fff5fa 0%, #f9e6f4 60%, #f3dcf5 100%);
+    }
+
+    .product-card-inactive {
+      background: #faf6f9;
+      opacity: 0.72;
+    }
+
+    .glass-nav {
+      background: rgba(255, 248, 252, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Hide scrollbar for horizontal status tabs */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="pb-24 md:pb-12">
+
+  <!-- Top Desktop/Mobile Wrapper -->
+  <div class="max-w-xl mx-auto min-h-screen flex flex-col">
+
+    <!-- Top App Bar / Brand Header -->
+    <header class="pt-4 px-4 pb-2 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#9333ea] via-[#d4387d] to-[#f472b6] flex items-center justify-center text-white shadow-sm shrink-0">
+          <i class="ph-fill ph-sparkle text-xl"></i>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5">
+            <h1 class="font-extrabold text-base sm:text-lg tracking-tight text-[#4c1d38] truncate">GeminiHunter</h1>
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#fce4f0] text-[#b82869] border border-[#f5c2d9] shrink-0">Pro Radar</span>
+          </div>
+          <p class="text-[11px] text-[#835a71] truncate">Pantau Peluang Gemini & Apps Premium</p>
+        </div>
+      </div>
+
+      <!-- Quick Action: X Account Login Badge & Simulate Tweet -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button onclick="openModal('modal-x-login')" id="header-x-account-btn" class="px-2.5 py-1.5 rounded-xl bg-[#27111e] hover:bg-[#3d1a2f] text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition active:scale-95" title="Atur akun X untuk membalas tweet">
+          <i class="ph-bold ph-x-logo text-xs text-[#f9a8d4]"></i>
+          <span id="header-x-username" class="max-w-[95px] truncate">Login Akun X</span>
+          <span id="header-x-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+        </button>
+        <button onclick="openModal('modal-simulasi')" class="p-2 rounded-xl bg-white/85 hover:bg-white text-[#69264c] border border-[#ebd0df] text-xs font-semibold flex items-center justify-center shadow-sm transition active:scale-95" title="Simulasi Tweet Masuk">
+          <i class="ph-bold ph-plus-circle text-base text-[#d4387d]"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Connected X Account Banner Bar -->
+    <div class="px-3.5 pt-1">
+      <div onclick="openModal('modal-x-login')" class="cursor-pointer px-3.5 py-2 rounded-2xl bg-white/75 hover:bg-white border border-[#ebd0e0] flex items-center justify-between gap-2 text-xs shadow-2xs transition">
+        <div class="flex items-center gap-2 min-w-0">
+          <span id="banner-x-status-icon" class="w-6 h-6 rounded-lg bg-[#fce4f0] text-[#b82869] flex items-center justify-center font-bold shrink-0">
+            <i class="ph-bold ph-user-switch"></i>
+          </span>
+          <div class="truncate">
+            <span class="text-[#7e586e]">Balas via akun X:</span>
+            <strong id="banner-x-account-text" class="text-[#4c1d38] ml-1">Belum terhubung (Klik untuk login)</strong>
+          </div>
+        </div>
+        <span class="text-[11px] font-bold text-[#c92a70] shrink-0 flex items-center gap-0.5">
+          <span>Ubah</span>
+          <i class="ph-bold ph-caret-right"></i>
+        </span>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-1 px-3.5 pt-2">
+
+      <!-- ==========================================
+           TAB 1: PELUANG MASUK (LEAD FEED)
+           ========================================== -->
+      <section id="view-peluang" class="space-y-3.5">
+        <!-- Main Section Header matching Screenshot 1 -->
+        <div class="px-1 pt-1 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <h2 class="text-2xl font-extrabold text-[#5c2644] tracking-tight">Peluang masuk</h2>
+            <span id="badge-total-matched" class="px-2.5 py-0.5 rounded-full bg-[#fde8ef] text-[#5c2644] font-bold text-xs border border-[#f5cbd9]">0</span>
+          </div>
+          <button onclick="exportLeadsToCSV()" class="flex items-center gap-1.5 text-xs font-semibold text-[#7d526a] hover:text-[#4c1d38] px-2.5 py-1.5 rounded-xl hover:bg-white/50 transition">
+            <i class="ph-bold ph-download-simple text-sm"></i>
+            <span>Ekspor CSV</span>
+          </button>
+        </div>
+
+        <!-- Status Filter Tabs (Semua, Baru, Ditindaklanjuti, Selesai, Diabaikan, Disimpan) -->
+        <div class="border-b border-[#dec6d8] flex items-center gap-5 overflow-x-auto no-scrollbar px-1">
+          <button onclick="setStatusFilter('Semua')" id="tab-status-Semua" class="status-tab pb-2.5 text-sm font-bold text-[#c92a70] border-b-2 border-[#c92a70] whitespace-nowrap transition">
+            Semua
+          </button>
+          <button onclick="setStatusFilter('Baru')" id="tab-status-Baru" class="status-tab pb-2.5 text-sm font-semibold text-[#7e586e] hover:text-[#5c2644] whitespace-nowrap flex items-center gap-1.5 transition">
+            <span>Baru</span>
+            <span id="badge-count-Baru" class="px-2 py-0.5 rounded-full bg-[#fde8ef] text-[#5c2644] text-xs font-bold">0</span>
+          </button>
+          <button onclick="setStatusFilter('Ditindaklanjuti')" id="tab-status-Ditindaklanjuti" class="status-tab pb-2.5 text-sm font-semibold text-[#7e586e] hover:text-[#5c2644] whitespace-nowrap transition">
+            Ditindaklanjuti
+          </button>
+          <button onclick="setStatusFilter('Selesai')" id="tab-status-Selesai" class="status-tab pb-2.5 text-sm font-semibold text-[#7e586e] hover:text-[#5c2644] whitespace-nowrap transition">
+            Selesai
+          </button>
+          <button onclick="setStatusFilter('Diabaikan')" id="tab-status-Diabaikan" class="status-tab pb-2.5 text-sm font-semibold text-[#7e586e] hover:text-[#5c2644] whitespace-nowrap transition">
+            Diabaikan
+          </button>
+          <button onclick="setStatusFilter('Disimpan')" id="tab-status-Disimpan" class="status-tab pb-2.5 text-sm font-semibold text-[#7e586e] hover:text-[#5c2644] whitespace-nowrap flex items-center gap-1 transition">
+            <i class="ph-bold ph-bookmark-simple"></i>
+            <span>Disimpan</span>
+          </button>
+        </div>
+
+        <!-- Search & Product Dropdown Row matching Screenshot 1 -->
+        <div class="grid grid-cols-12 gap-2.5 pt-0.5">
+          <div class="col-span-7 relative">
+            <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9b748b] text-base"></i>
+            <input
+              id="input-search-tweet"
+              type="text"
+              oninput="renderLeads()"
+              placeholder="Cari nama atau isi tweet"
+              class="w-full pl-9 pr-3 py-2.5 rounded-2xl bg-[#fff9fc] border border-[#edd2e2] text-sm text-[#4c1d38] placeholder-[#9b748b] focus:outline-none focus:border-[#d4387d] shadow-sm"
+            />
+          </div>
+          <div class="col-span-5 relative">
+            <select
+              id="select-product-filter"
+              onchange="renderLeads()"
+              class="w-full appearance-none pl-3.5 pr-8 py-2.5 rounded-2xl bg-[#fff9fc] border border-[#edd2e2] text-sm font-medium text-[#4c1d38] focus:outline-none focus:border-[#d4387d] shadow-sm truncate"
+            >
+              <option value="ALL">Semua produk</option>
+            </select>
+            <i class="ph-bold ph-caret-down absolute right-3 top-1/2 -translate-y-1/2 text-[#7e586e] text-xs pointer-events-none"></i>
+          </div>
+        </div>
+
+        <!-- Smart Bridge: Live X Search Query Bar (No-API Required Alternative + Auto Stream Toggle) -->
+        <div class="p-3 rounded-2xl bg-gradient-to-r from-[#fdf2f8] via-[#fcf5ff] to-[#fdf2f8] border border-[#efc9e0] shadow-sm flex flex-col gap-2">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              <span class="text-xs font-bold text-[#5c2644]">Radar Gemini Aktif</span>
+              <span id="stream-status-label" class="text-[11px] text-[#8a6479]">· Filter 3 lapis berjalan</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="generateRandomGeminiTweet()" class="px-2.5 py-1 rounded-xl bg-[#fce4f0] hover:bg-[#f9d0e5] text-[#a62260] text-[11px] font-bold flex items-center gap-1 transition active:scale-95">
+                <i class="ph-bold ph-arrows-clockwise"></i>
+                <span>Tarik Tweet Baru</span>
+              </button>
+              <button onclick="openLiveXSearch()" class="px-2.5 py-1 rounded-xl bg-[#5c2644] hover:bg-[#421930] text-white text-[11px] font-semibold flex items-center gap-1 transition active:scale-95" title="Buka pencarian langsung di aplikasi X sesuai rumus filter Anda">
+                <span>Live X</span>
+                <i class="ph-bold ph-arrow-up-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Leads Feed Container -->
+        <div id="leads-container" class="space-y-3.5 pb-6">
+          <!-- Cards populated via JavaScript -->
+        </div>
+      </section>
+
+      <!-- ==========================================
+           TAB 2: HASHTAG & KATA KUNCI (FILTER RULES)
+           ========================================== -->
+      <section id="view-kata-kunci" class="hidden space-y-4 pb-8">
+        <div class="bg-[#fff9fc] border border-[#f0d6e6] rounded-[28px] p-5 shadow-sm space-y-6">
+          <!-- Header matching Screenshot 2 -->
+          <div class="flex items-start gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-[#fae39c] text-[#785314] flex items-center justify-center text-2xl font-bold shrink-0 shadow-inner">
+              #
+            </div>
+            <div>
+              <h2 class="text-xl font-extrabold text-[#5c2644]">Hashtag & kata kunci</h2>
+              <p class="text-xs text-[#8a6479] mt-0.5 leading-relaxed">Tentukan percakapan seputar Gemini yang ingin kamu temukan di X.</p>
+            </div>
+          </div>
+
+          <!-- 1. Hashtag Pantauan -->
+          <div class="space-y-2">
+            <label class="block text-sm font-bold text-[#5c2644]">Hashtag pantauan</label>
+            <p class="text-xs text-[#8a6479]">Pisahkan dengan koma atau baris baru. Maksimal 8 hashtag. (Kosongkan jika ingin memantau semua tweet tanpa wajib hashtag).</p>
+            <textarea
+              id="input-hashtags"
+              rows="2"
+              oninput="saveFilterSettings()"
+              class="w-full p-3.5 rounded-2xl bg-white border border-[#e6c6d9] text-sm text-[#3d182c] focus:outline-none focus:border-[#d4387d] leading-relaxed"
+              placeholder="zonauang, zonaba, bealanja"
+            ></textarea>
+            <div class="flex items-center justify-between text-[11px] text-[#8a6479]">
+              <span>Memakai hashtag jual-beli populer untuk menyaring pembeli produk digital.</span>
+              <label class="inline-flex items-center gap-1.5 cursor-pointer font-semibold text-[#722b53]">
+                <input type="checkbox" id="check-require-hashtag" onchange="saveFilterSettings()" class="rounded text-[#d4387d] focus:ring-0" />
+                <span>Wajib memuat hashtag</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 2. Tanda Ingin Membeli (Include Keywords) -->
+          <div class="space-y-2">
+            <label class="block text-sm font-bold text-[#5c2644]">Tanda ingin membeli</label>
+            <p class="text-xs text-[#8a6479]">Pisahkan dengan koma atau baris baru, maksimal 25 frasa. Tweet harus memuat minimal satu kata niat beli di bawah ini.</p>
+            <textarea
+              id="input-buy-keywords"
+              rows="4"
+              oninput="saveFilterSettings()"
+              class="w-full p-3.5 rounded-2xl bg-white border border-[#e6c6d9] text-sm text-[#3d182c] focus:outline-none focus:border-[#d4387d] leading-relaxed"
+            ></textarea>
+          </div>
+
+          <!-- 3. Abaikan Kata (Negative / Exclude Keywords) -->
+          <div class="space-y-2">
+            <label class="block text-sm font-bold text-[#5c2644]">Abaikan kata (Blokir Penjual / Kompetitor)</label>
+            <p class="text-xs text-[#8a6479]">Pisahkan dengan koma atau baris baru, maksimal 35 frasa. Tweet yang mengandung kata di bawah ini (seperti promosi seller WTS) otomatis dibuang.</p>
+            <textarea
+              id="input-exclude-keywords"
+              rows="4"
+              oninput="saveFilterSettings()"
+              class="w-full p-3.5 rounded-2xl bg-white border border-[#e6c6d9] text-sm text-[#3d182c] focus:outline-none focus:border-[#d4387d] leading-relaxed"
+            ></textarea>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex items-center justify-between pt-2 border-t border-[#f2dce9]">
+            <button onclick="resetDefaultFilters()" class="text-xs font-semibold text-[#8a6479] hover:text-[#5c2644] underline">
+              Reset ke Bawaan Gemini
+            </button>
+            <span id="filter-save-indicator" class="text-xs font-bold text-emerald-600 opacity-0 transition-opacity">
+              ✓ Tersimpan otomatis
+            </span>
+          </div>
+        </div>
+
+        <!-- LIVE FILTER SANDBOX / TESTER -->
+        <div class="bg-[#fff9fc] border border-[#f0d6e6] rounded-[28px] p-5 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-extrabold text-[#5c2644] flex items-center gap-1.5">
+              <i class="ph-fill ph-flask text-[#d4387d] text-base"></i>
+              <span>Uji Coba Mesin Filter (Real-Time)</span>
+            </h3>
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-[#fce4f0] text-[#9e255d] font-semibold">Live Simulator</span>
+          </div>
+          <p class="text-xs text-[#8a6479]">Ketik contoh kalimat tweet di bawah untuk menguji apakah kalimat tersebut lolos sebagai peluang pembeli atau terblokir sebagai penjual.</p>
+          <textarea
+            id="input-test-tweet"
+            rows="2"
+            oninput="runFilterSandbox()"
+            placeholder="Contoh: butuh cepet gemini advanced 1 bulan buat nugas #zonauang"
+            class="w-full p-3 rounded-2xl bg-white border border-[#e6c6d9] text-sm text-[#3d182c] focus:outline-none focus:border-[#d4387d]"
+          >butuh cepet gemini advanced 1 bulan buat skripsi #zonauang</textarea>
+
+          <div id="sandbox-result-box" class="p-3.5 rounded-2xl border text-xs space-y-1.5">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           TAB 3: PRODUK PANTAUAN (MONITORED APPS)
+           ========================================== -->
+      <section id="view-produk" class="hidden space-y-4 pb-8">
+        <div class="bg-[#fff9fc] border border-[#f0d6e6] rounded-[28px] p-5 shadow-sm space-y-5">
+          <!-- Header matching Screenshot 3 -->
+          <div class="flex items-start gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-[#fae39c] text-[#785314] flex items-center justify-center text-2xl font-bold shrink-0 shadow-inner">
+              <i class="ph-bold ph-sliders-horizontal"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-extrabold text-[#5c2644]">Produk pantauan</h2>
+              <p class="text-xs text-[#8a6479] mt-0.5 leading-relaxed">Pilih minimal satu varian produk Gemini atau tambahkan aplikasi digital sendiri.</p>
+            </div>
+          </div>
+
+          <!-- + Tambah Aplikasi Button matching Screenshot 3 -->
+          <div>
+            <button onclick="openProductModal()" class="px-4 py-2.5 rounded-2xl bg-white hover:bg-[#fdf2f8] text-[#6e1d4a] border border-[#ebcde0] font-bold text-xs flex items-center gap-2 shadow-sm transition active:scale-95">
+              <i class="ph-bold ph-plus text-sm"></i>
+              <span>Tambah aplikasi</span>
+            </button>
+          </div>
+
+          <!-- 2-Column Product Cards Grid matching Screenshot 3 -->
+          <div id="products-grid" class="grid grid-cols-2 gap-3.5">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           TAB 4: AKUN X & TEMPLATE BALASAN
+           ========================================== -->
+      <section id="view-pengaturan" class="hidden space-y-4 pb-8">
+        <!-- Card 0: Akun X Jualan Kamu (Reply Sender Identity) -->
+        <div class="bg-[#fff9fc] border border-[#f0d6e6] rounded-[28px] p-5 shadow-sm space-y-4">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-start gap-3">
+              <div class="w-11 h-11 rounded-2xl bg-[#27111e] text-[#f9a8d4] flex items-center justify-center text-xl font-bold shrink-0">
+                <i class="ph-bold ph-x-logo"></i>
+              </div>
+              <div>
+                <h2 class="text-lg font-extrabold text-[#5c2644]">Akun X Jualan Kamu</h2>
+                <p class="text-xs text-[#8a6479]">Karena sistem ini bukan auto-reply bot (agar akunmu aman dari suspend), balasan akan dikirim langsung melalui sesi akun X yang sedang login di perangkatmu.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-white border border-[#e6c6d9] flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div id="tab-x-avatar" class="w-10 h-10 rounded-full bg-[#fce4f0] text-[#9e1f5c] font-extrabold text-sm flex items-center justify-center shrink-0">
+                X
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <p id="tab-x-display" class="font-bold text-sm text-[#3d182c] truncate">Belum diatur</p>
+                  <span id="tab-x-badge" class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">Mode Tamu</span>
+                </div>
+                <p id="tab-x-method" class="text-xs text-[#8a6479] truncate">Klik tombol di samping untuk menghubungkan akun X</p>
+              </div>
+            </div>
+            <button onclick="openModal('modal-x-login')" class="px-3.5 py-2 rounded-xl bg-[#d4387d] hover:bg-[#b82869] text-white text-xs font-bold shrink-0 shadow-xs transition">
+              Atur Akun X
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 1: Template Balasan Cepat -->
+        <div class="bg-[#fff9fc] border border-[#f0d6e6] rounded-[28px] p-5 shadow-sm space-y-4">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-start gap-3">
+              <div class="w-11 h-11 rounded-2xl bg-[#fce4f0] text-[#b82869] flex items-center justify-center text-xl font-bold shrink-0">
+                <i class="ph-fill ph-chat-circle-text"></i>
+              </div>
+              <div>
+                <h2 class="text-lg font-extrabold text-[#5c2644]">Template Balasan</h2>
+                <p class="text-xs text-[#8a6479]">Klik "Balas pakai template" pada kartu tweet untuk langsung mengisi teks promosi dan membuka balasan di akun X kamu.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Variables hint -->
+          <div class="p-3 rounded-2xl bg-[#fcf2f7] border border-[#f2d5e6] text-xs text-[#6e3856] leading-relaxed">
+            <span class="font-bold">Variabel otomatis:</span> Gunakan <code class="px-1.5 py-0.5 rounded bg-white font-mono text-[#b82869]">(username)</code> atau <code class="px-1.5 py-0.5 rounded bg-white font-mono text-[#b82869]">{username}</code> untuk menyebut username pembeli, dan <code class="px-1.5 py-0.5 rounded bg-white font-mono text-[#b82869]">{produk}</code> untuk nama produk yang dicari.
+          </div>
+
+          <!-- Template List -->
+          <div id="templates-list" class="space-y-3">
+            <!-- Populated by JS -->
+          </div>
+
+          <button onclick="addNewTemplate()" class="w-full py-2.5 rounded-2xl border border-dashed border-[#d9aec8] text-xs font-bold text-[#783158] hover:bg-[#fdf2f8] transition">
+            + Tambah Template Balasan Baru
+          </button>
+        </div>
+
+        <!-- Card 2: Koneksi API X / Scraper & Cara Kerja -->
+        <div class="bg-[#fff9fc] border border-[#f0d6e6] rounded-[28px] p-5 shadow-sm space-y-4">
+          <div class="flex items-start gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-[#ede9fe] text-[#6d28d9] flex items-center justify-center text-xl font-bold shrink-0">
+              <i class="ph-fill ph-plugs-connected"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-extrabold text-[#5c2644]">Koneksi API X & Scraper</h2>
+              <p class="text-xs text-[#8a6479]">Atur bagaimana web ini menarik data tweet terbaru dari X (Twitter).</p>
+            </div>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div class="p-3.5 rounded-2xl bg-white border border-[#e6c6d9] space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-[#4c1d38]">Mode 1: Smart Query X + Simulasi Lokal (Aktif & Gratis)</span>
+                <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-[10px]">Aktif</span>
+              </div>
+              <p class="text-[#7e586e] leading-relaxed">
+                Sistem secara otomatis merangkai seluruh produk Gemini, kata kunci beli, dan daftar blokir kamu menjadi <strong>Query Boolean X</strong>. Klik tombol <strong>"Live X ↗"</strong> di beranda untuk membuka feed real-time X yang sudah bersih dari tweet penjual.
+              </p>
+              <div class="p-2.5 rounded-xl bg-[#faf5f8] border border-[#ebd7e4] font-mono text-[11px] text-[#6b2d50] break-all" id="preview-boolean-query">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-white border border-[#e6c6d9] space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-[#4c1d38]">Mode 2: Integrasi Third-Party X Scraper API</span>
+                <span class="px-2 py-0.5 rounded-full bg-[#fce4f0] text-[#b82869] font-bold text-[10px]">Opsional</span>
+              </div>
+              <p class="text-[#7e586e] leading-relaxed">
+                Seperti yang dibahas di thread X, penarikan otomatis di latar belakang membutuhkan <strong>API X</strong> (misalnya via <em>RapidAPI Twitter v24</em>, <em>SocialData.tools</em>, atau <em>Apify</em>). Masukkan Endpoint / API Key Anda di bawah jika ingin menarik JSON langsung:
+              </p>
+              <input
+                id="input-api-key"
+                type="password"
+                placeholder="Masukkan API Key (RapidAPI / SocialData / Bearer Token X)..."
+                class="w-full px-3 py-2 rounded-xl bg-[#faf6f9] border border-[#e6c6d9] text-xs focus:outline-none focus:border-[#d4387d]"
+              />
+              <div class="flex items-center justify-between pt-1">
+                <span class="text-[11px] text-[#8a6479]">Data tersimpan aman di browser lokal Anda.</span>
+                <button onclick="saveApiKey()" class="px-3 py-1.5 rounded-xl bg-[#5c2644] text-white font-semibold text-xs hover:bg-[#421930] transition">
+                  Simpan API Key
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- BOTTOM NAVIGATION BAR (Mobile-First Sticky Nav) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-30 glass-nav border-t border-[#ebd0e0]">
+      <div class="max-w-xl mx-auto px-3 py-2 grid grid-cols-4 gap-1">
+        <button onclick="switchMainView('peluang')" id="nav-btn-peluang" class="flex flex-col items-center justify-center py-1.5 rounded-2xl text-[#c92a70] bg-[#fce4f0]/70 font-bold transition">
+          <div class="relative">
+            <i class="ph-fill ph-tray text-xl"></i>
+            <span id="nav-badge-new" class="absolute -top-1 -right-2.5 px-1.5 py-0.2 rounded-full bg-[#d4387d] text-white text-[9px] font-extrabold">5</span>
+          </div>
+          <span class="text-[11px] mt-0.5">Peluang</span>
+        </button>
+
+        <button onclick="switchMainView('kata-kunci')" id="nav-btn-kata-kunci" class="flex flex-col items-center justify-center py-1.5 rounded-2xl text-[#7e586e] hover:text-[#5c2644] font-semibold transition">
+          <i class="ph-bold ph-hash text-xl"></i>
+          <span class="text-[11px] mt-0.5">Kata Kunci</span>
+        </button>
+
+        <button onclick="switchMainView('produk')" id="nav-btn-produk" class="flex flex-col items-center justify-center py-1.5 rounded-2xl text-[#7e586e] hover:text-[#5c2644] font-semibold transition">
+          <i class="ph-bold ph-sparkle text-xl"></i>
+          <span class="text-[11px] mt-0.5">Produk Gemini</span>
+        </button>
+
+        <button onclick="switchMainView('pengaturan')" id="nav-btn-pengaturan" class="flex flex-col items-center justify-center py-1.5 rounded-2xl text-[#7e586e] hover:text-[#5c2644] font-semibold transition">
+          <i class="ph-bold ph-user-gear text-xl"></i>
+          <span class="text-[11px] mt-0.5">Akun X & Teks</span>
+        </button>
+      </div>
+    </nav>
+
+  </div>
+
+  <!-- ==========================================
+       MODAL 0: LOGIN / HUBUNGKAN AKUN X
+       ========================================== -->
+  <div id="modal-x-login" class="fixed inset-0 z-50 hidden bg-[#2d1021]/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-[#fff9fc] w-full max-w-md rounded-t-[28px] sm:rounded-[28px] border border-[#f0d6e6] p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#27111e] text-white flex items-center justify-center">
+            <i class="ph-bold ph-x-logo text-base"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-[#5c2644]">Hubungkan Akun X Jualan</h3>
+            <p class="text-xs text-[#8a6479]">Balas peluang langsung dari akun X kamu</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-x-login')" class="w-8 h-8 rounded-full bg-[#f5e1ed] text-[#5c2644] flex items-center justify-center">
+          <i class="ph-bold ph-x"></i>
+        </button>
+      </div>
+
+      <div class="p-3 rounded-2xl bg-[#fdf2f8] border border-[#f2cde0] text-xs text-[#69264c] leading-relaxed">
+        <strong>Cara Kerja Aman (Anti-Suspend):</strong> Web ini tidak meminta password X kamu. Saat klik <em>"Balas pakai template"</em>, sistem akan menyalin teks balasan dan membuka aplikasi/web X yang sudah login dengan akun jualanmu agar kamu tinggal klik tombol <strong>Reply/Post</strong>.
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-[#5c2644] mb-1">Username Akun X Jualanmu</label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-[#9b748b]">@</span>
+            <input id="x-login-username" type="text" placeholder="contoh: jualanlulla" class="w-full pl-8 pr-3.5 py-2.5 rounded-2xl bg-white border border-[#e6c6d9] text-sm font-semibold text-[#3d182c] focus:outline-none focus:border-[#d4387d]" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-[#5c2644] mb-1">Nama Toko / Display Name (Opsional)</label>
+          <input id="x-login-display" type="text" placeholder="contoh: Ready Gemini Pro 10k/bln ✨" class="w-full px-3.5 py-2.5 rounded-2xl bg-white border border-[#e6c6d9] text-sm text-[#3d182c] focus:outline-none focus:border-[#d4387d]" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-[#5c2644] mb-1">Metode Buka Balasan X</label>
+          <select id="x-login-method" class="w-full px-3.5 py-2.5 rounded-2xl bg-white border border-[#e6c6d9] text-xs font-semibold text-[#3d182c] focus:outline-none focus:border-[#d4387d]">
+            <option value="intent">Web / App X Intent (Otomatis isi teks + siap kirim)</option>
+            <option value="direct_tweet">Buka Tweet Target + Auto-Copy Template ke Clipboard</option>
+          </select>
+        </div>
+
+        <label class="flex items-center gap-2 text-xs text-[#5c2644] font-medium cursor-pointer pt-0.5">
+          <input type="checkbox" id="x-login-autocopy" checked class="rounded text-[#d4387d] focus:ring-0" />
+          <span>Selalu salin otomatis teks template ke clipboard saat klik balas</span>
+        </label>
+      </div>
+
+      <div class="flex items-center justify-between gap-2 pt-2 border-t border-[#f2dce9]">
+        <a href="https://x.com/login" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-[#7e586e] hover:text-[#3d182c] inline-flex items-center gap-1">
+          <span>Buka Login x.com</span>
+          <i class="ph-bold ph-arrow-up-right"></i>
+        </a>
+        <div class="flex items-center gap-2">
+          <button onclick="disconnectXAccount()" class="px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50">Putuskan</button>
+          <button onclick="saveXAccountLogin()" class="px-5 py-2.5 rounded-2xl bg-[#d4387d] hover:bg-[#b82869] text-white text-xs font-bold shadow-sm">Simpan & Hubungkan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 1: BALAS PAKAI TEMPLATE
+       ========================================== -->
+  <div id="modal-reply" class="fixed inset-0 z-50 hidden bg-[#2d1021]/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-[#fff9fc] w-full max-w-md rounded-t-[28px] sm:rounded-[28px] border border-[#f0d6e6] p-5 shadow-2xl space-y-4 animate-fade-in">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-extrabold text-[#5c2644]">Balas Pakai Template</h3>
+          <p id="reply-modal-target" class="text-xs text-[#8a6479]">Membalas @username</p>
+        </div>
+        <button onclick="closeModal('modal-reply')" class="w-8 h-8 rounded-full bg-[#f5e1ed] text-[#5c2644] flex items-center justify-center hover:bg-[#ebd0e0]">
+          <i class="ph-bold ph-x"></i>
+        </button>
+      </div>
+
+      <!-- Active Sender Account Pill -->
+      <div class="px-3 py-2 rounded-xl bg-[#fcf2f7] border border-[#f0d4e4] flex items-center justify-between text-xs">
+        <span class="text-[#7e586e]">Mengirim dari akun: <strong id="reply-modal-sender" class="text-[#4c1d38]">@akun_kamu</strong></span>
+        <button onclick="closeModal('modal-reply'); openModal('modal-x-login');" class="text-[11px] font-bold text-[#c92a70] hover:underline">Ganti Akun</button>
+      </div>
+
+      <!-- Template selector pills -->
+      <div class="space-y-1.5">
+        <label class="text-xs font-bold text-[#5c2644]">Pilih Template Promosi:</label>
+        <div id="reply-template-pills" class="flex flex-wrap gap-1.5">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Editable Reply Text -->
+      <div class="space-y-1.5">
+        <label class="text-xs font-bold text-[#5c2644]">Pesan Balasan (Siap kirim ke X):</label>
+        <textarea
+          id="reply-modal-textarea"
+          rows="3"
+          class="w-full p-3.5 rounded-2xl bg-white border border-[#e6c6d9] text-sm font-medium text-[#3d182c] focus:outline-none focus:border-[#d4387d] leading-relaxed"
+        ></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5 pt-1">
+        <button onclick="copyReplyOnly()" class="py-2.5 px-3 rounded-2xl bg-[#fce4f0] hover:bg-[#f7d0e4] text-[#7a1c4b] font-bold text-xs flex items-center justify-center gap-1.5 transition">
+          <i class="ph-bold ph-copy text-sm"></i>
+          <span>Salin Teks Saja</span>
+        </button>
+        <button onclick="sendReplyToX()" class="py-2.5 px-3 rounded-2xl bg-[#d4387d] hover:bg-[#b82869] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition">
+          <span>Salin & Balas di X</span>
+          <i class="ph-bold ph-arrow-up-right text-sm"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 2: TAMBAH / UBAH PRODUK PANTAUAN
+       ========================================== -->
+  <div id="modal-product" class="fixed inset-0 z-50 hidden bg-[#2d1021]/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-[#fff9fc] w-full max-w-md rounded-t-[28px] sm:rounded-[28px] border border-[#f0d6e6] p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 id="product-modal-title" class="text-base font-extrabold text-[#5c2644]">Tambah Produk Pantauan</h3>
+        <button onclick="closeModal('modal-product')" class="w-8 h-8 rounded-full bg-[#f5e1ed] text-[#5c2644] flex items-center justify-center">
+          <i class="ph-bold ph-x"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="product-modal-id" />
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-[#5c2644] mb-1">Nama Produk / Varian</label>
+          <input id="product-modal-name" type="text" placeholder="Contoh: Gemini Advanced 2TB" class="w-full px-3.5 py-2.5 rounded-2xl bg-white border border-[#e6c6d9] text-sm focus:outline-none focus:border-[#d4387d]" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-[#5c2644] mb-1">Kata Kunci Deteksi Produk (Pisahkan dengan koma)</label>
+          <p class="text-[11px] text-[#8a6479] mb-1.5">Tweet yang menyebut salah satu kata ini akan ditandai sebagai produk ini.</p>
+          <textarea id="product-modal-keywords" rows="3" placeholder="gemini advanced, gemini pro, gemini 2tb, akun gemini" class="w-full p-3 rounded-2xl bg-white border border-[#e6c6d9] text-sm focus:outline-none focus:border-[#d4387d]"></textarea>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal('modal-product')" class="px-4 py-2 rounded-xl text-xs font-bold text-[#7e586e]">Batal</button>
+        <button onclick="saveProductFromModal()" class="px-5 py-2.5 rounded-2xl bg-[#d4387d] text-white text-xs font-bold shadow-sm">Simpan Produk</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 3: SIMULASI TWEET MASUK (UJI SCRAPER)
+       ========================================== -->
+  <div id="modal-simulasi" class="fixed inset-0 z-50 hidden bg-[#2d1021]/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-[#fff9fc] w-full max-w-md rounded-t-[28px] sm:rounded-[28px] border border-[#f0d6e6] p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-extrabold text-[#5c2644]">Simulasi Tweet X Masuk</h3>
+          <p class="text-xs text-[#8a6479]">Uji apakah sistem berhasil menangkap atau memblokir tweet baru.</p>
+        </div>
+        <button onclick="closeModal('modal-simulasi')" class="w-8 h-8 rounded-full bg-[#f5e1ed] text-[#5c2644] flex items-center justify-center">
+          <i class="ph-bold ph-x"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5">
+        <div>
+          <label class="block text-xs font-bold text-[#5c2644] mb-1">Nama Display</label>
+          <input id="sim-name" type="text" value="Nadia ✿" class="w-full px-3 py-2 rounded-xl bg-white border border-[#e6c6d9] text-xs" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-[#5c2644] mb-1">Username X</label>
+          <input id="sim-username" type="text" value="nadiastudy_" class="w-full px-3 py-2 rounded-xl bg-white border border-[#e6c6d9] text-xs" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-[#5c2644] mb-1">Isi Tweet</label>
+        <textarea id="sim-text" rows="3" class="w-full p-3 rounded-2xl bg-white border border-[#e6c6d9] text-sm focus:outline-none focus:border-[#d4387d]">butuh cepet gemini advanced 1 bulan yang garansi buat nugas malam ini #zonauang</textarea>
+      </div>
+
+      <div class="flex items-center justify-between gap-2 pt-1">
+        <button onclick="fillRandomSimSample()" class="text-xs font-bold text-[#b82869] hover:underline">
+          🎲 Acak Contoh Tweet
+        </button>
+        <button onclick="submitSimulatedTweet()" class="px-4 py-2.5 rounded-2xl bg-[#d4387d] hover:bg-[#b82869] text-white text-xs font-bold shadow-sm">
+          Masukkan ke Radar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast-box" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2.5 rounded-2xl bg-[#471630] text-white text-xs font-semibold shadow-xl flex items-center gap-2">
+    <i class="ph-fill ph-check-circle text-emerald-400 text-base"></i>
+    <span id="toast-message">Berhasil!</span>
+  </div>
+
+  <script>
+    // =========================================================
+    // DEFAULT DATA & STATE INITIALIZATION (FOCUSED ON GEMINI)
+    // =========================================================
+    const STORAGE_KEY = 'GEMINI_HUNTER_STATE_V2';
+
+    const defaultState = {
+      statusFilter: 'Semua',
+      requireHashtag: false,
+      hashtags: 'zonauang, zonaba, bealanja, zonajajan',
+      buyKeywords: 'wtb, cari, nyari, butuh, mau beli, mau, pengen, adakah, ada yang jual, ada yg jual, info, want to buy, ada, need, spill, sewa',
+      excludeKeywords: 'wts, open order, ready stock, ready stok, jual akun, price list, pricelist, jasa convert, giveaway, stock melimpah, stok melimpah, testi, testimoni',
+      apiKey: '',
+      xAccount: {
+        connected: true,
+        username: 'geministore_id',
+        displayName: 'Ready Gemini Pro 10k/bln',
+        replyMethod: 'intent',
+        autoCopy: true
+      },
+      products: [
+        {
+          id: 'gemini-pro',
+          name: 'Gemini',
+          letter: 'G',
+          color: '#8b2c68',
+          bg: '#fce4f0',
+          enabled: true,
+          type: 'Utama · Aktif Dipantau',
+          keywords: ['gemini', 'gemini pro', 'gemini advanced', 'google one ai', 'ai premium', 'gemini edu', 'akun gemini', 'gemini 2tb']
+        },
+        {
+          id: 'netflix',
+          name: 'Netflix',
+          letter: 'N',
+          color: '#b91c1c',
+          bg: '#fee2e2',
+          enabled: false,
+          type: 'Aplikasi bawaan',
+          keywords: ['netflix', 'netflik', 'netplik']
+        },
+        {
+          id: 'canva',
+          name: 'Canva',
+          letter: 'C',
+          color: '#0e7490',
+          bg: '#cffafe',
+          enabled: false,
+          type: 'Aplikasi bawaan',
+          keywords: ['canva', 'canva pro']
+        },
+        {
+          id: 'capcut',
+          name: 'Capcut',
+          letter: 'C',
+          color: '#374151',
+          bg: '#f3f4f6',
+          enabled: false,
+          type: 'Aplikasi bawaan',
+          keywords: ['capcut', 'capcut pro']
+        },
+        {
+          id: 'spotify',
+          name: 'Spotify',
+          letter: 'S',
+          color: '#15803d',
+          bg: '#dcfce7',
+          enabled: false,
+          type: 'Aplikasi bawaan',
+          keywords: ['spotify', 'spotipai', 'spotify prem']
+        },
+        {
+          id: 'chatgpt',
+          name: 'ChatGPT',
+          letter: 'C',
+          color: '#166534',
+          bg: '#dcfce7',
+          enabled: false,
+          type: 'Aplikasi bawaan',
+          keywords: ['chatgpt', 'chat gpt', 'gpt plus', 'chatgpt plus', 'gpt 4']
+        },
+        {
+          id: 'youtube',
+          name: 'YouTube',
+          letter: 'Y',
+          color: '#c2410c',
+          bg: '#ffedd5',
+          enabled: false,
+          type: 'Aplikasi bawaan',
+          keywords: ['youtube', 'yt prem', 'youtube premium', 'yt premium']
+        },
+        {
+          id: 'prime-video',
+          name: 'Prime Video',
+          letter: 'P',
+          color: '#1d4ed8',
+          bg: '#dbeafe',
+          enabled: false,
+          type: 'Aplikasi bawaan',
+          keywords: ['prime video', 'amazon prime', 'prime']
+        },
+        {
+          id: 'vidio',
+          name: 'Vidio',
+          letter: 'V',
+          color: '#be123c',
+          bg: '#ffe4e6',
+          enabled: false,
+          type: 'Aplikasi bawaan',
+          keywords: ['vidio', 'vidio platinum', 'akun vidio']
+        },
+        {
+          id: 'disney',
+          name: 'Disney+',
+          letter: 'D',
+          color: '#1e40af',
+          bg: '#dbeafe',
+          enabled: false,
+          type: 'Aplikasi bawaan',
+          keywords: ['disney+', 'disney plus', 'disney hotstar']
+        }
+      ],
+      templates: [
+        {
+          id: 'tpl-1',
+          title: 'Utama (Gemini Pro 10k/bln)',
+          text: 'readyy kak @(username) gemini pro 10k/bln, fastresp wa di bioo'
+        },
+        {
+          id: 'tpl-2',
+          title: 'Fleksibel Semua Aplikasi ({produk})',
+          text: 'readyy kak @(username) {produk} 10k/bln full garansi, fastresp wa di bioo'
+        },
+        {
+          id: 'tpl-3',
+          title: 'Gemini + Google One 2TB Invite Email',
+          text: 'readyy kak @(username) gemini pro + gdrive 2tb 10k/bln bisa invite email sendiri, fastresp wa di bioo'
+        }
+      ],
+      rawTweets: [
+        {
+          id: 'tw-101',
+          displayName: '피카 ✿',
+          displayBg: '#f9e0ec',
+          avatarChar: '피',
+          username: 'pixypaw',
+          minutesAgo: 4,
+          text: 'butuh cepet gemini pro 1 bulan buat bantu coding & skripsi #zonauang',
+          status: 'Baru',
+          bookmarked: false
+        },
+        {
+          id: 'tw-102',
+          displayName: 'rara suka kopi',
+          displayBg: '#ede9fe',
+          avatarChar: 'R',
+          username: 'rarastudies',
+          minutesAgo: 12,
+          text: 'wtb akun gemini pro atau google one ai 2tb yang bisa invite email pribadi dong, butuh hari ini #zonauang',
+          status: 'Baru',
+          bookmarked: true
+        },
+        {
+          id: 'tw-103',
+          displayName: 'दिमास | skripsian',
+          displayBg: '#dbeafe',
+          avatarChar: 'D',
+          username: 'dimas_ui',
+          minutesAgo: 19,
+          text: 'info ada yang jual gemini advanced sharing sebulan murah? mau pake fitur deep research nya #zonaba',
+          status: 'Baru',
+          bookmarked: false
+        },
+        {
+          id: 'tw-104',
+          displayName: 'aku cinta ohyul',
+          displayBg: '#fce7f3',
+          avatarChar: 'A',
+          username: 'ldniellea',
+          minutesAgo: 27,
+          text: 'hii ini ciuss ga ada yg maw gemini pro murah? ayo hiii masii butuh 1 akun lagii 😏🫰🏻 syaratnyaa gampang saja no scam yh #zonauang',
+          status: 'Baru',
+          bookmarked: false
+        },
+        {
+          id: 'tw-105',
+          displayName: '케이 ⋆˚࿔',
+          displayBg: '#fef3c7',
+          avatarChar: '케',
+          username: 'keikoluvs',
+          minutesAgo: 35,
+          text: 'nyari gemini edu atau gemini pro yang awet buat 1 semester adakah? spill dong #bealanja',
+          status: 'Baru',
+          bookmarked: false
+        },
+        {
+          id: 'tw-108',
+          displayName: 'Salsa Nonton',
+          displayBg: '#fee2e2',
+          avatarChar: 'S',
+          username: 'salsanonton',
+          minutesAgo: 15,
+          text: 'butuh cepet netflix 3 hari atau 1 bulan anti hold #zonauang',
+          status: 'Baru',
+          bookmarked: false
+        },
+        {
+          id: 'tw-109',
+          displayName: 'Desain Bareng',
+          displayBg: '#cffafe',
+          avatarChar: 'D',
+          username: 'desainbareng',
+          minutesAgo: 22,
+          text: 'wtb canva pro sebulan dan capcut pro yang fastresp #zonauang',
+          status: 'Baru',
+          bookmarked: false
+        },
+        {
+          id: 'tw-107',
+          displayName: 'Sellers Apps Premium (Contoh Terblokir)',
+          displayBg: '#f3f4f6',
+          avatarChar: 'S',
+          username: 'tokopremiumku',
+          minutesAgo: 5,
+          text: 'WTS OPEN ORDER gemini advanced ready stock melimpah! pricelist murah langsung DM #zonauang',
+          status: 'Baru',
+          bookmarked: false
+        }
+      ]
+    };
+
+    let state = loadState();
+    let activeReplyLeadId = null;
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          return { ...defaultState, ...parsed };
+        }
+      } catch (e) {
+        console.warn('Gagal memuat state dari localStorage:', e);
+      }
+      return JSON.parse(JSON.stringify(defaultState));
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn('Gagal menyimpan state:', e);
+      }
+    }
+
+    // =========================================================
+    // CORE 3-LAYER FILTER & HIGHLIGHT ENGINE
+    // =========================================================
+    function parseCommaList(str) {
+      if (!str) return [];
+      return str
+        .split(/[\n,]+/)
+        .map(s => s.trim().toLowerCase())
+        .filter(Boolean);
+    }
+
+    function evaluateTweet(tweetText) {
+      const lowerText = tweetText.toLowerCase();
+      const hashtags = parseCommaList(state.hashtags);
+      const buyKeywords = parseCommaList(state.buyKeywords);
+      const excludeKeywords = parseCommaList(state.excludeKeywords);
+      const enabledProducts = state.products.filter(p => p.enabled);
+
+      // 1. Check Negative / Exclude Keywords first
+      const matchedExclude = excludeKeywords.filter(kw => lowerText.includes(kw));
+      if (matchedExclude.length > 0) {
+        return {
+          passed: false,
+          reason: `Diblokir karena memuat kata penjual: "${matchedExclude.join(', ')}"`,
+          matchedExclude
+        };
+      }
+
+      // 2. Check Monitored Products
+      let matchedProducts = [];
+      let matchedProductTerms = [];
+      enabledProducts.forEach(prod => {
+        const hits = prod.keywords.filter(k => lowerText.includes(k.toLowerCase()));
+        if (hits.length > 0) {
+          matchedProducts.push(prod);
+          matchedProductTerms.push(...hits);
+        }
+      });
+
+      if (matchedProducts.length === 0) {
+        return {
+          passed: false,
+          reason: 'Tidak menyebut produk Gemini/aplikasi yang sedang dipantau.'
+        };
+      }
+
+      // 3. Check Buying Intent Keywords
+      const matchedBuy = buyKeywords.filter(kw => {
+        // Match whole word or phrase where possible
+        return lowerText.includes(kw);
+      });
+
+      if (matchedBuy.length === 0) {
+        return {
+          passed: false,
+          reason: 'Menyebut produk, tetapi tidak memuat kata kunci tanda ingin membeli (wtb, butuh, cari, dll).'
+        };
+      }
+
+      // 4. Check Hashtags
+      const matchedHashtags = hashtags.filter(ht => {
+        const cleanHt = ht.replace(/^#/, '');
+        return lowerText.includes('#' + cleanHt) || lowerText.includes(cleanHt);
+      });
+
+      if (state.requireHashtag && matchedHashtags.length === 0) {
+        return {
+          passed: false,
+          reason: 'Tweet tidak memuat hashtag pantauan yang diwajibkan.'
+        };
+      }
+
+      return {
+        passed: true,
+        primaryProduct: matchedProducts[0],
+        allProducts: matchedProducts,
+        matchedProductTerms: [...new Set(matchedProductTerms)],
+        matchedBuy: [...new Set(matchedBuy)],
+        matchedHashtags: matchedHashtags.map(h => '#' + h.replace(/^#/, ''))
+      };
+    }
+
+    // Escape HTML to prevent XSS while highlighting
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // Highlight matched buying words & product keywords inside the tweet text (like Screenshot 1)
+    function highlightTweetHtml(text, evalResult) {
+      let safe = escapeHtml(text);
+      const termsToHighlight = [
+        ...evalResult.matchedBuy,
+        ...evalResult.matchedProductTerms
+      ]
+        .filter(Boolean)
+        .sort((a, b) => b.length - a.length); // Longest phrases first
+
+      if (termsToHighlight.length === 0) return safe;
+
+      // Build regex escaping special characters
+      const escapedTerms = termsToHighlight.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
+
+      return safe.replace(regex, '<mark class="kw-highlight">$1</mark>');
+    }
+
+    // =========================================================
+    // RENDER TAB 1: PELUANG MASUK (LEADS DASHBOARD)
+    // =========================================================
+    function populateProductFilterDropdown() {
+      const select = document.getElementById('select-product-filter');
+      const currentVal = select.value || 'ALL';
+      const enabledProducts = state.products.filter(p => p.enabled);
+
+      select.innerHTML = `<option value="ALL">Semua produk</option>` +
+        enabledProducts.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+
+      if ([...select.options].some(o => o.value === currentVal)) {
+        select.value = currentVal;
+      }
+    }
+
+    function setStatusFilter(status) {
+      state.statusFilter = status;
+      saveState();
+
+      document.querySelectorAll('.status-tab').forEach(btn => {
+        btn.className = 'status-tab pb-2.5 text-sm font-semibold text-[#7e586e] hover:text-[#5c2644] whitespace-nowrap flex items-center gap-1.5 transition';
+      });
+
+      const activeBtn = document.getElementById('tab-status-' + status);
+      if (activeBtn) {
+        activeBtn.className = 'status-tab pb-2.5 text-sm font-bold text-[#c92a70] border-b-2 border-[#c92a70] whitespace-nowrap flex items-center gap-1.5 transition';
+      }
+
+      renderLeads();
+    }
+
+    function getEvaluatedLeads() {
+      const results = [];
+      state.rawTweets.forEach(tw => {
+        const ev = evaluateTweet(tw.text);
+        if (ev.passed) {
+          results.push({
+            ...tw,
+            eval: ev
+          });
+        }
+      });
+      return results;
+    }
+
+    function renderLeads() {
+      populateProductFilterDropdown();
+      const allValidLeads = getEvaluatedLeads();
+
+      // Update counters
+      const newLeadsCount = allValidLeads.filter(l => l.status === 'Baru').length;
+      document.getElementById('badge-total-matched').textContent = allValidLeads.length;
+      document.getElementById('badge-count-Baru').textContent = newLeadsCount;
+      document.getElementById('nav-badge-new').textContent = newLeadsCount;
+      document.getElementById('nav-badge-new').style.display = newLeadsCount > 0 ? 'inline-block' : 'none';
+
+      // Filter by search query, product dropdown, and status tab
+      const searchQ = (document.getElementById('input-search-tweet')?.value || '').trim().toLowerCase();
+      const selectedProd = document.getElementById('select-product-filter')?.value || 'ALL';
+
+      const filtered = allValidLeads.filter(item => {
+        if (state.statusFilter === 'Disimpan') {
+          if (!item.bookmarked) return false;
+        } else if (state.statusFilter !== 'Semua') {
+          if (item.status !== state.statusFilter) return false;
+        }
+
+        if (selectedProd !== 'ALL') {
+          const hasProd = item.eval.allProducts.some(p => p.id === selectedProd);
+          if (!hasProd) return false;
+        }
+
+        if (searchQ) {
+          const hay = `${item.displayName} ${item.username} ${item.text}`.toLowerCase();
+          if (!hay.includes(searchQ)) return false;
+        }
+
+        return true;
+      });
+
+      const container = document.getElementById('leads-container');
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="bg-[#fff9fc] border border-[#f0d6e6] rounded-[28px] p-8 text-center space-y-2.5">
+            <div class="w-12 h-12 rounded-2xl bg-[#fce4f0] text-[#c92a70] mx-auto flex items-center justify-center text-2xl">
+              <i class="ph-duotone ph-magnifying-glass"></i>
+            </div>
+            <h3 class="font-bold text-base text-[#5c2644]">Belum ada peluang di kategori ini</h3>
+            <p class="text-xs text-[#8a6479] max-w-xs mx-auto">Coba klik tombol <strong>"Tarik Tweet Baru"</strong> di atas atau sesuaikan kata kunci pada menu Kata Kunci.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => {
+        const prod = item.eval.primaryProduct;
+        const highlightedHtml = highlightTweetHtml(item.text, item.eval);
+        const matchSummary = [
+          ...item.eval.matchedBuy.slice(0, 2),
+          ...item.eval.matchedHashtags.slice(0, 2)
+        ].join(' · ');
+
+        const statusBadgeColors = {
+          'Baru': 'bg-[#fdf2f8] text-[#7a2855] border-[#ebcde0]',
+          'Ditindaklanjuti': 'bg-amber-50 text-amber-800 border-amber-200',
+          'Selesai': 'bg-emerald-50 text-emerald-800 border-emerald-200',
+          'Diabaikan': 'bg-gray-100 text-gray-600 border-gray-200'
+        };
+
+        return `
+          <article class="bg-[#fff9fc] border border-[#f0d4e4] rounded-[26px] p-4 shadow-sm space-y-3.5 transition hover:border-[#e3b8d1]">
+            <!-- Top Row: User Info + Status Pill + Bookmark -->
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-[#6b264b] shrink-0" style="background:${item.displayBg || '#fce4f0'}">
+                  ${escapeHtml(item.avatarChar || item.displayName.charAt(0))}
+                </div>
+                <div>
+                  <h3 class="font-bold text-sm text-[#3d182c] leading-tight">${escapeHtml(item.displayName)}</h3>
+                  <p class="text-xs text-[#8a6479] mt-0.5">@${escapeHtml(item.username)} &middot; ${item.minutesAgo} menit lalu</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold border ${statusBadgeColors[item.status] || statusBadgeColors['Baru']}">
+                  ${item.status}
+                </span>
+                <button onclick="toggleBookmark('${item.id}')" class="p-1.5 rounded-xl text-[#8a6479] hover:text-[#c92a70] transition" title="Simpan peluang">
+                  <i class="${item.bookmarked ? 'ph-fill text-[#c92a70]' : 'ph'} ph-bookmark-simple text-lg"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Second Row: Product Pill + Intent Pill + Public Feed Pill (Matches Screenshot 1) -->
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#fff0f7] border border-[#f2c7de] text-xs font-bold text-[#6e1d4a]">
+                <span class="font-extrabold" style="color:${prod.color}">${prod.letter}</span>
+                <span>${escapeHtml(prod.name)}</span>
+              </span>
+              <span class="px-3 py-1 rounded-xl bg-[#fff0f7] border border-[#f2c7de] text-xs font-medium text-[#6e1d4a]">
+                Mencari produk
+              </span>
+              <span class="px-2.5 py-1 rounded-xl bg-[#fceaf3] text-[11px] font-medium text-[#8a5a75]">
+                Feed publik
+              </span>
+            </div>
+
+            <!-- Tweet Body with Pink Keyword Highlights -->
+            <div class="text-[15px] text-[#3b192b] leading-relaxed font-normal">
+              ${highlightedHtml}
+            </div>
+
+            <!-- Matched Indicator Row -->
+            <div class="flex items-center gap-1.5 text-xs text-[#7e586e] pb-1 border-b border-[#f5e1ed]">
+              <i class="ph ph-check-circle text-sm text-[#8a6479]"></i>
+              <span>Cocok: <strong class="font-semibold text-[#5c2644]">${escapeHtml(matchSummary || item.eval.matchedProductTerms.join(' · '))}</strong></span>
+            </div>
+
+            <!-- Bottom Actions Row: Balas Pakai Template + Buka Tweet + Status Dropdown -->
+            <div class="flex items-center justify-between gap-2 pt-0.5 flex-wrap">
+              <div class="flex items-center gap-3">
+                <button onclick="openReplyModal('${item.id}')" class="px-4 py-2 rounded-2xl bg-[#fff7fb] hover:bg-[#fce4f0] border border-[#eabfd6] text-xs font-bold text-[#9e1f5c] flex items-center gap-1.5 shadow-2xs transition active:scale-95">
+                  <i class="ph-bold ph-arrow-up-right"></i>
+                  <span>Balas pakai template</span>
+                </button>
+                <a href="https://x.com/search?q=${encodeURIComponent(item.text)}&f=live" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-[#6e455c] hover:text-[#3d182c] inline-flex items-center gap-1">
+                  <span>Buka tweet</span>
+                  <i class="ph-bold ph-arrow-up-right text-xs"></i>
+                </a>
+              </div>
+
+              <!-- Status Changer Dropdown -->
+              <div class="relative">
+                <select
+                  onchange="updateLeadStatus('${item.id}', this.value)"
+                  class="appearance-none bg-transparent pr-5 pl-2 py-1 text-xs font-semibold text-[#6e455c] focus:outline-none cursor-pointer"
+                >
+                  <option value="Baru" ${item.status === 'Baru' ? 'selected' : ''}>Baru</option>
+                  <option value="Ditindaklanjuti" ${item.status === 'Ditindaklanjuti' ? 'selected' : ''}>Ditindaklanjuti</option>
+                  <option value="Selesai" ${item.status === 'Selesai' ? 'selected' : ''}>Selesai</option>
+                  <option value="Diabaikan" ${item.status === 'Diabaikan' ? 'selected' : ''}>Diabaikan</option>
+                </select>
+                <i class="ph-bold ph-caret-down absolute right-0.5 top-1/2 -translate-y-1/2 text-[10px] text-[#7e586e] pointer-events-none"></i>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function updateLeadStatus(id, newStatus) {
+      const target = state.rawTweets.find(t => t.id === id);
+      if (target) {
+        target.status = newStatus;
+        saveState();
+        renderLeads();
+        showToast(`Status diubah ke "${newStatus}"`);
+      }
+    }
+
+    function toggleBookmark(id) {
+      const target = state.rawTweets.find(t => t.id === id);
+      if (target) {
+        target.bookmarked = !target.bookmarked;
+        saveState();
+        renderLeads();
+        showToast(target.bookmarked ? 'Disimpan ke Bookmark' : 'Dihapus dari Bookmark');
+      }
+    }
+
+    // =========================================================
+    // TAB 2: HASHTAG & KATA KUNCI SETTINGS + LIVE SANDBOX
+    // =========================================================
+    function initFilterInputs() {
+      document.getElementById('input-hashtags').value = state.hashtags;
+      document.getElementById('input-buy-keywords').value = state.buyKeywords;
+      document.getElementById('input-exclude-keywords').value = state.excludeKeywords;
+      document.getElementById('check-require-hashtag').checked = !!state.requireHashtag;
+      runFilterSandbox();
+      updateBooleanQueryPreview();
+    }
+
+    function saveFilterSettings() {
+      state.hashtags = document.getElementById('input-hashtags').value;
+      state.buyKeywords = document.getElementById('input-buy-keywords').value;
+      state.excludeKeywords = document.getElementById('input-exclude-keywords').value;
+      state.requireHashtag = document.getElementById('check-require-hashtag').checked;
+      saveState();
+
+      const indicator = document.getElementById('filter-save-indicator');
+      indicator.classList.remove('opacity-0');
+      clearTimeout(window._saveTimer);
+      window._saveTimer = setTimeout(() => indicator.classList.add('opacity-0'), 1500);
+
+      runFilterSandbox();
+      updateBooleanQueryPreview();
+      renderLeads();
+    }
+
+    function resetDefaultFilters() {
+      state.hashtags = defaultState.hashtags;
+      state.buyKeywords = defaultState.buyKeywords;
+      state.excludeKeywords = defaultState.excludeKeywords;
+      state.requireHashtag = false;
+      saveState();
+      initFilterInputs();
+      renderLeads();
+      showToast('Filter dikembalikan ke setelan awal Gemini');
+    }
+
+    function runFilterSandbox() {
+      const sampleText = document.getElementById('input-test-tweet')?.value || '';
+      const box = document.getElementById('sandbox-result-box');
+      if (!box) return;
+
+      const res = evaluateTweet(sampleText);
+      if (res.passed) {
+        box.className = 'p-3.5 rounded-2xl bg-emerald-50/90 border border-emerald-200 text-xs text-emerald-950 space-y-1.5';
+        box.innerHTML = `
+          <div class="font-extrabold text-emerald-800 flex items-center gap-1.5">
+            <i class="ph-fill ph-check-circle text-base"></i>
+            <span>LOLOS FILTER! (Masuk ke Beranda Peluang)</span>
+          </div>
+          <div><strong>Produk Terdeteksi:</strong> ${escapeHtml(res.primaryProduct.name)} (${escapeHtml(res.matchedProductTerms.join(', '))})</div>
+          <div><strong>Kata Niat Beli:</strong> ${escapeHtml(res.matchedBuy.join(', '))}</div>
+          <div><strong>Pratinjau Highlight:</strong> <span class="leading-relaxed">${highlightTweetHtml(sampleText, res)}</span></div>
+        `;
+      } else {
+        box.className = 'p-3.5 rounded-2xl bg-rose-50/90 border border-rose-200 text-xs text-rose-950 space-y-1';
+        box.innerHTML = `
+          <div class="font-extrabold text-rose-800 flex items-center gap-1.5">
+            <i class="ph-fill ph-x-circle text-base"></i>
+            <span>DITOLAK / DIBLOKIR OLEH FILTER</span>
+          </div>
+          <div><strong>Alasan:</strong> ${escapeHtml(res.reason)}</div>
+        `;
+      }
+    }
+
+    // =========================================================
+    // TAB 3: PRODUK PANTAUAN (MATCHING SCREENSHOT 3)
+    // =========================================================
+    function renderProductsGrid() {
+      const grid = document.getElementById('products-grid');
+      if (!grid) return;
+
+      grid.innerHTML = state.products.map(prod => {
+        const cardStyle = prod.enabled ? 'product-card-gradient border-[#e8bfd8]' : 'product-card-inactive border-[#e5d5df]';
+        return `
+          <div class="space-y-1.5">
+            <!-- Rounded Pill Card -->
+            <div onclick="toggleProductEnabled('${prod.id}')" class="cursor-pointer p-3.5 rounded-[22px] border ${cardStyle} flex items-center justify-between gap-2 shadow-2xs transition select-none">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-sm shrink-0" style="background:${prod.bg}; color:${prod.color}">
+                  ${escapeHtml(prod.letter)}
+                </div>
+                <span class="font-bold text-sm text-[#3d182c] leading-snug truncate">${escapeHtml(prod.name)}</span>
+              </div>
+
+              <div class="w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${prod.enabled ? 'bg-[#e04890] text-white' : 'bg-white border border-[#d8b8c9] text-transparent'}">
+                <i class="ph-bold ph-check text-xs"></i>
+              </div>
+            </div>
+
+            <!-- Subtitle & Edit/Delete Row matching Screenshot 3 -->
+            <div class="px-1 flex items-center justify-between text-[11px] text-[#8a6479]">
+              <span class="truncate">${escapeHtml(prod.type || 'Aplikasi kustom')}</span>
+            </div>
+            <div class="px-1 flex items-center justify-end gap-2">
+              <button onclick="openProductModal('${prod.id}')" class="text-xs font-semibold text-[#633950] hover:text-[#3d182c] inline-flex items-center gap-1">
+                <i class="ph ph-pencil-simple"></i>
+                <span>Ubah</span>
+              </button>
+              <button onclick="deleteProduct('${prod.id}')" class="w-7 h-7 rounded-xl border border-[#e3c7d8] bg-white/80 text-[#8a6479] hover:text-rose-600 flex items-center justify-center transition" title="Hapus aplikasi">
+                <i class="ph ph-trash text-xs"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleProductEnabled(id) {
+      const prod = state.products.find(p => p.id === id);
+      if (!prod) return;
+
+      // Prevent disabling all products
+      const enabledCount = state.products.filter(p => p.enabled).length;
+      if (prod.enabled && enabledCount <= 1) {
+        showToast('Pilih minimal 1 produk pantauan aktif');
+        return;
+      }
+
+      prod.enabled = !prod.enabled;
+      saveState();
+      renderProductsGrid();
+      renderLeads();
+      updateBooleanQueryPreview();
+    }
+
+    function openProductModal(editId = null) {
+      const titleEl = document.getElementById('product-modal-title');
+      const idEl = document.getElementById('product-modal-id');
+      const nameEl = document.getElementById('product-modal-name');
+      const kwEl = document.getElementById('product-modal-keywords');
+
+      if (editId) {
+        const prod = state.products.find(p => p.id === editId);
+        if (!prod) return;
+        titleEl.textContent = 'Ubah Produk Pantauan';
+        idEl.value = prod.id;
+        nameEl.value = prod.name;
+        kwEl.value = prod.keywords.join(', ');
+      } else {
+        titleEl.textContent = 'Tambah Aplikasi / Varian Gemini';
+        idEl.value = '';
+        nameEl.value = '';
+        kwEl.value = '';
+      }
+
+      openModal('modal-product');
+    }
+
+    function saveProductFromModal() {
+      const id = document.getElementById('product-modal-id').value;
+      const name = document.getElementById('product-modal-name').value.trim();
+      const kwRaw = document.getElementById('product-modal-keywords').value;
+      const keywords = parseCommaList(kwRaw);
+
+      if (!name || keywords.length === 0) {
+        showToast('Mohon isi nama produk dan minimal 1 kata kunci');
+        return;
+      }
+
+      if (id) {
+        const prod = state.products.find(p => p.id === id);
+        if (prod) {
+          prod.name = name;
+          prod.letter = name.charAt(0).toUpperCase();
+          prod.keywords = keywords;
+        }
+      } else {
+        state.products.unshift({
+          id: 'prod-' + Date.now(),
+          name,
+          letter: name.charAt(0).toUpperCase(),
+          color: '#9e1f5c',
+          bg: '#fce4f0',
+          enabled: true,
+          type: 'Aplikasi kustom',
+          keywords
+        });
+      }
+
+      saveState();
+      closeModal('modal-product');
+      renderProductsGrid();
+      renderLeads();
+      updateBooleanQueryPreview();
+      showToast('Produk pantauan disimpan');
+    }
+
+    function deleteProduct(id) {
+      if (state.products.length <= 1) {
+        showToast('Minimal harus ada 1 produk di daftar');
+        return;
+      }
+      state.products = state.products.filter(p => p.id !== id);
+      saveState();
+      renderProductsGrid();
+      renderLeads();
+      showToast('Produk dihapus');
+    }
+
+    // =========================================================
+    // TAB 4: REPLY TEMPLATES & SMART X BOOLEAN SEARCH BUILDER
+    // =========================================================
+    function renderTemplates() {
+      const container = document.getElementById('templates-list');
+      if (!container) return;
+
+      container.innerHTML = state.templates.map((tpl, idx) => `
+        <div class="p-3.5 rounded-2xl bg-white border border-[#e6c6d9] space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <input
+              type="text"
+              value="${escapeHtml(tpl.title)}"
+              onchange="updateTemplate(${idx}, 'title', this.value)"
+              class="font-bold text-xs text-[#5c2644] bg-transparent border-b border-transparent focus:border-[#d4387d] focus:outline-none w-full"
+            />
+            <button onclick="deleteTemplate(${idx})" class="text-xs text-[#8a6479] hover:text-rose-600">
+              <i class="ph ph-trash"></i>
+            </button>
+          </div>
+          <textarea
+            rows="2"
+            onchange="updateTemplate(${idx}, 'text', this.value)"
+            class="w-full text-xs text-[#4c1d38] bg-[#faf5f8] p-2.5 rounded-xl border border-[#ebd7e4] focus:outline-none focus:border-[#d4387d]"
+          >${escapeHtml(tpl.text)}</textarea>
+        </div>
+      `).join('');
+    }
+
+    function updateTemplate(index, field, val) {
+      if (state.templates[index]) {
+        state.templates[index][field] = val;
+        saveState();
+        showToast('Template diperbarui');
+      }
+    }
+
+    function addNewTemplate() {
+      state.templates.push({
+        id: 'tpl-' + Date.now(),
+        title: 'Template Promosi Gemini Baru',
+        text: 'Halo kak @{username}, aku ready {produk} full garansi & siap pakai. Yuk cek DM kak ✨'
+      });
+      saveState();
+      renderTemplates();
+      showToast('Template baru ditambahkan');
+    }
+
+    function deleteTemplate(index) {
+      if (state.templates.length <= 1) {
+        showToast('Minimal harus ada 1 template balasan');
+        return;
+      }
+      state.templates.splice(index, 1);
+      saveState();
+      renderTemplates();
+    }
+
+    // Build real X Advanced Search query from active Gemini products + buying words + negative words
+    function buildXSearchQuery() {
+      const enabledProducts = state.products.filter(p => p.enabled);
+      const prodTerms = enabledProducts
+        .flatMap(p => p.keywords.slice(0, 2))
+        .slice(0, 5)
+        .map(t => t.includes(' ') ? `"${t}"` : t);
+
+      const buyTerms = parseCommaList(state.buyKeywords)
+        .slice(0, 6)
+        .map(t => t.includes(' ') ? `"${t}"` : t);
+
+      const excludeTerms = parseCommaList(state.excludeKeywords)
+        .slice(0, 6)
+        .map(t => `-${t.includes(' ') ? `"${t}"` : t}`);
+
+      const prodClause = prodTerms.length ? `(${prodTerms.join(' OR ')})` : '"gemini"';
+      const buyClause = buyTerms.length ? `(${buyTerms.join(' OR ')})` : '(wtb OR butuh OR cari)';
+      const excludeClause = excludeTerms.join(' ');
+
+      return `${prodClause} ${buyClause} ${excludeClause}`.trim();
+    }
+
+    function updateBooleanQueryPreview() {
+      const el = document.getElementById('preview-boolean-query');
+      if (el) {
+        el.textContent = buildXSearchQuery();
+      }
+    }
+
+    function openLiveXSearch() {
+      const query = buildXSearchQuery();
+      const url = `https://x.com/search?q=${encodeURIComponent(query)}&f=live`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    function saveApiKey() {
+      const val = document.getElementById('input-api-key').value.trim();
+      state.apiKey = val;
+      saveState();
+      showToast('Konfigurasi API disimpan');
+    }
+
+    // =========================================================
+    // X ACCOUNT LOGIN & CONNECTION MANAGEMENT
+    // =========================================================
+    function renderXAccountUI() {
+      const acc = state.xAccount || { connected: false, username: '', displayName: '', replyMethod: 'intent', autoCopy: true };
+      const headerUsername = document.getElementById('header-x-username');
+      const headerDot = document.getElementById('header-x-dot');
+      const bannerText = document.getElementById('banner-x-account-text');
+      const tabAvatar = document.getElementById('tab-x-avatar');
+      const tabDisplay = document.getElementById('tab-x-display');
+      const tabBadge = document.getElementById('tab-x-badge');
+      const tabMethod = document.getElementById('tab-x-method');
+
+      if (acc.connected && acc.username) {
+        const cleanUser = acc.username.replace(/^@/, '');
+        if (headerUsername) headerUsername.textContent = '@' + cleanUser;
+        if (headerDot) headerDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+        if (bannerText) bannerText.textContent = `@${cleanUser} (${acc.displayName || 'Aktif'})`;
+        if (tabAvatar) tabAvatar.textContent = cleanUser.charAt(0).toUpperCase();
+        if (tabDisplay) tabDisplay.textContent = `@${cleanUser}`;
+        if (tabBadge) {
+          tabBadge.className = 'px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold';
+          tabBadge.textContent = 'Terhubung';
+        }
+        if (tabMethod) {
+          tabMethod.textContent = acc.replyMethod === 'direct_tweet'
+            ? 'Mode: Buka Tweet Target + Auto-Copy'
+            : 'Mode: Kirim via Web/App X Intent';
+        }
+      } else {
+        if (headerUsername) headerUsername.textContent = 'Login Akun X';
+        if (headerDot) headerDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+        if (bannerText) bannerText.textContent = 'Belum terhubung (Klik untuk login akun X)';
+        if (tabAvatar) tabAvatar.textContent = 'X';
+        if (tabDisplay) tabDisplay.textContent = 'Belum ada akun X';
+        if (tabBadge) {
+          tabBadge.className = 'px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold';
+          tabBadge.textContent = 'Belum Login';
+        }
+        if (tabMethod) tabMethod.textContent = 'Hubungkan username X kamu untuk membalas tweet';
+      }
+
+      // Populate modal inputs
+      const inputUser = document.getElementById('x-login-username');
+      const inputDisp = document.getElementById('x-login-display');
+      const inputMethod = document.getElementById('x-login-method');
+      const inputAutoCopy = document.getElementById('x-login-autocopy');
+
+      if (inputUser) inputUser.value = (acc.username || '').replace(/^@/, '');
+      if (inputDisp) inputDisp.value = acc.displayName || '';
+      if (inputMethod) inputMethod.value = acc.replyMethod || 'intent';
+      if (inputAutoCopy) inputAutoCopy.checked = acc.autoCopy !== false;
+    }
+
+    function saveXAccountLogin() {
+      const rawUser = document.getElementById('x-login-username').value.trim().replace(/^@/, '');
+      const disp = document.getElementById('x-login-display').value.trim();
+      const method = document.getElementById('x-login-method').value;
+      const autoCopy = document.getElementById('x-login-autocopy').checked;
+
+      if (!rawUser) {
+        showToast('Masukkan username X jualan kamu terlebih dahulu');
+        return;
+      }
+
+      state.xAccount = {
+        connected: true,
+        username: rawUser,
+        displayName: disp || 'Seller Gemini Pro',
+        replyMethod: method,
+        autoCopy: autoCopy
+      };
+
+      saveState();
+      renderXAccountUI();
+      closeModal('modal-x-login');
+      showToast(`Terhubung sebagai @${rawUser}`);
+    }
+
+    function disconnectXAccount() {
+      state.xAccount = {
+        connected: false,
+        username: '',
+        displayName: '',
+        replyMethod: 'intent',
+        autoCopy: true
+      };
+      saveState();
+      renderXAccountUI();
+      closeModal('modal-x-login');
+      showToast('Akun X diputuskan');
+    }
+
+    // =========================================================
+    // REPLY WITH TEMPLATE MODAL WORKFLOW
+    // =========================================================
+    function formatTemplateString(templateStr, username, productName) {
+      const cleanUsername = (username || '').replace(/^@/, '');
+      const lowerProd = (productName || 'gemini pro').toLowerCase();
+      return templateStr
+        // Replace @(username) or @{username} without doubling @
+        .replace(/@\(username\)/gi, '@' + cleanUsername)
+        .replace(/@\{username\}/gi, '@' + cleanUsername)
+        // Replace (username) or {username}
+        .replace(/\(username\)/gi, cleanUsername)
+        .replace(/\{username\}/gi, cleanUsername)
+        // Replace (produk) or {produk}
+        .replace(/\(produk\)/gi, lowerProd)
+        .replace(/\{produk\}/gi, lowerProd);
+    }
+
+    function openReplyModal(leadId) {
+      const leads = getEvaluatedLeads();
+      const lead = leads.find(l => l.id === leadId);
+      if (!lead) return;
+
+      activeReplyLeadId = leadId;
+      document.getElementById('reply-modal-target').textContent = `Membalas @${lead.username} · Mencari ${lead.eval.primaryProduct.name}`;
+
+      const senderEl = document.getElementById('reply-modal-sender');
+      if (senderEl) {
+        senderEl.textContent = (state.xAccount && state.xAccount.connected && state.xAccount.username)
+          ? '@' + state.xAccount.username.replace(/^@/, '')
+          : 'Akun X di perangkatmu (Belum diset)';
+      }
+
+      const pillsContainer = document.getElementById('reply-template-pills');
+      pillsContainer.innerHTML = state.templates.map((tpl, i) => `
+        <button onclick="selectReplyTemplate(${i})" class="px-3 py-1.5 rounded-xl bg-[#fce4f0] hover:bg-[#f5c6de] text-[#6e1d4a] text-xs font-semibold transition">
+          ${escapeHtml(tpl.title)}
+        </button>
+      `).join('');
+
+      selectReplyTemplate(0);
+      openModal('modal-reply');
+    }
+
+    function selectReplyTemplate(tplIndex) {
+      const leads = getEvaluatedLeads();
+      const lead = leads.find(l => l.id === activeReplyLeadId);
+      const tpl = state.templates[tplIndex] || state.templates[0];
+      if (!lead || !tpl) return;
+
+      const filled = formatTemplateString(tpl.text, lead.username, lead.eval.primaryProduct.name);
+      document.getElementById('reply-modal-textarea').value = filled;
+    }
+
+    function copyTextFallback(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+      } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    function copyReplyOnly() {
+      const text = document.getElementById('reply-modal-textarea').value;
+      copyTextFallback(text);
+      if (activeReplyLeadId) {
+        updateLeadStatus(activeReplyLeadId, 'Ditindaklanjuti');
+      }
+      closeModal('modal-reply');
+      showToast('Teks disalin! Status diubah ke Ditindaklanjuti');
+    }
+
+    function sendReplyToX() {
+      const text = document.getElementById('reply-modal-textarea').value;
+      const leads = getEvaluatedLeads();
+      const lead = leads.find(l => l.id === activeReplyLeadId);
+
+      if (!state.xAccount || state.xAccount.autoCopy !== false) {
+        copyTextFallback(text);
+      }
+
+      if (activeReplyLeadId) {
+        updateLeadStatus(activeReplyLeadId, 'Ditindaklanjuti');
+      }
+      closeModal('modal-reply');
+
+      if (state.xAccount && state.xAccount.replyMethod === 'direct_tweet' && lead) {
+        const searchUrl = `https://x.com/search?q=${encodeURIComponent(lead.text)}&f=live`;
+        window.open(searchUrl, '_blank', 'noopener,noreferrer');
+        showToast('Teks disalin! Membuka tweet target di X...');
+      } else {
+        const intentUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
+        window.open(intentUrl, '_blank', 'noopener,noreferrer');
+        showToast('Membuka X dengan template balasan...');
+      }
+    }
+
+    function exportLeadsToCSV() {
+      const leads = getEvaluatedLeads();
+      if (leads.length === 0) {
+        showToast('Tidak ada data peluang untuk diekspor');
+        return;
+      }
+
+      const headers = ['Nama', 'Username', 'Produk Gemini', 'Isi Tweet', 'Kata Kunci Cocok', 'Status'];
+      const rows = leads.map(l => [
+        `"${l.displayName.replace(/"/g, '""')}"`,
+        `"/@${l.username}"`,
+        `"${l.eval.primaryProduct.name}"`,
+        `"${l.text.replace(/"/g, '""')}"`,
+        `"${[...l.eval.matchedBuy, ...l.eval.matchedHashtags].join(', ')}"`,
+        `"${l.status}"`
+      ]);
+
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `peluang-gemini-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('File CSV berhasil diunduh!');
+    }
+
+    // =========================================================
+    // NAVIGATION & UI UTILITIES
+    // =========================================================
+    function switchMainView(viewName) {
+      const views = ['peluang', 'kata-kunci', 'produk', 'pengaturan'];
+      views.forEach(v => {
+        const sec = document.getElementById('view-' + v);
+        const btn = document.getElementById('nav-btn-' + v);
+        if (v === viewName) {
+          sec.classList.remove('hidden');
+          btn.className = 'flex flex-col items-center justify-center py-1.5 rounded-2xl text-[#c92a70] bg-[#fce4f0]/70 font-bold transition';
+        } else {
+          sec.classList.add('hidden');
+          btn.className = 'flex flex-col items-center justify-center py-1.5 rounded-2xl text-[#7e586e] hover:text-[#5c2644] font-semibold transition';
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openModal(id) {
+      document.getElementById(id)?.classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id)?.classList.add('hidden');
+    }
+
+    function showToast(msg) {
+      const box = document.getElementById('toast-box');
+      const text = document.getElementById('toast-message');
+      text.textContent = msg;
+      box.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        box.classList.add('hidden');
+      }, 2600);
+    }
+
+    // Initialize Application on Load
+    window.onload = function () {
+      renderXAccountUI();
+      initFilterInputs();
+      renderProductsGrid();
+      renderTemplates();
+      renderLeads();
+    };
+  </script>
+</body>
+</html>
